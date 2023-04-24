@@ -1,0 +1,32 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Dinosaur {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  name        String   @unique
+  height      Float
+  length      Float
+  weight      Float
+  era         Era
+  diet        Diet
+  description String   @db.Text
+}
+
+enum Era {
+  TRIASSIC
+  JURASSIC
+  CRETACEOUS
+}
+
+enum Diet {
+  CARNIVORE
+  HERBIVORE
+  OMNIVORE
+}
