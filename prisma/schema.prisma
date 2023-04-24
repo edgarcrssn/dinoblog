@@ -17,6 +17,7 @@ model Dinosaur {
   era         Era
   diet        Diet
   description String   @db.Text
+  image       Bytes
 }
 
 enum Era {

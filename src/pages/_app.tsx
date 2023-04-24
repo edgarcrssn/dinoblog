@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { Layout, Menu, theme } from 'antd';
+import Link from 'next/link';
 
 const { Header, Content, Footer } = Layout;
 
@@ -15,18 +16,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <Header
           style={{ position: 'sticky', top: 0, zIndex: 1, width: '100%' }}
         >
-          <div className="logo">🦕 Dinoblog</div>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={['home']}
-            items={[
-              {
-                key: 'home',
-                label: 'Home',
-              },
-            ]}
-          />
+          <Link className="logo" href="/">
+            🦕 Dinoblog 🦖
+          </Link>
         </Header>
         <Content className="site-layout" style={{ padding: '0 50px' }}>
           <div

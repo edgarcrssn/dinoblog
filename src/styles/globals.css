@@ -16,8 +16,13 @@ a {
 }
 
 .logo {
-  float: left;
+  display: block;
+  text-align: center;
   font-size: 1.5rem;
+  font-weight: 500;
   color: white;
   padding: 0 1rem;
+}
+.logo:hover {
+  color: white;
 }
