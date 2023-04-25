@@ -1,6 +1,6 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
-import { Layout, Menu, theme } from 'antd';
+import { Layout, theme } from 'antd';
 import Link from 'next/link';
 
 const { Header, Content, Footer } = Layout;

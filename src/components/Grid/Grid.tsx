@@ -1,8 +1,16 @@
 import React, { PropsWithChildren } from 'react';
 import styles from './Grid.module.scss';
 
-const Grid = ({ children }: PropsWithChildren) => {
-  return <ul className={styles.grid}>{children}</ul>;
+interface Props {
+  size?: 'narrow' | 'normal';
+}
+
+const Grid = ({ children, size = 'normal' }: PropsWithChildren<Props>) => {
+  return (
+    <ul className={`${styles.grid} ${size === 'narrow' ? styles.narrow : ''}`}>
+      {children}
+    </ul>
+  );
 };
 
 export default Grid;

@@ -26,3 +26,7 @@ a {
 .logo:hover {
   color: white;
 }
+
+h1 {
+  font-size: 2rem;
+}

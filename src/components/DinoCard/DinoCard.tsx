@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './DinoCard.module.scss';
-import { Dinosaur } from '@/pages/index';
+import { Dinosaur } from '@/pages/dinosaurs/index';
 import {
   EditOutlined,
   EllipsisOutlined,
@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Avatar, Card } from 'antd';
 import { formatName } from '@/utils/formatName';
+import Link from 'next/link';
 
 interface Props {
   dinosaur: Dinosaur;
@@ -27,7 +28,11 @@ const DinoCard = ({ dinosaur }: Props) => {
             src={dinosaur.image}
           />
         }
-        actions={['Read more']}
+        actions={[
+          <Link key={dinosaur.id} href={`/dinosaurs/${dinosaur.name}`}>
+            Read more
+          </Link>,
+        ]}
       >
         <Meta
           title={formatName(dinosaur.name)}
