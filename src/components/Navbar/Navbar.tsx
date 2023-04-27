@@ -71,7 +71,7 @@ const Navbar = () => {
         </Link>
         {loggedUser ? (
           <span className={styles.connectedMessage}>
-            Bonjour {loggedUser.username ? loggedUser.username : 'visiteur'} !
+            Hello {loggedUser.username ? loggedUser.username : 'visitor'}!
             <Tooltip title="Disconnect" placement="bottom">
               <button onClick={disconnect}>
                 <DisconnectOutlined />

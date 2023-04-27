@@ -1,5 +1,5 @@
 import { Diet, Era, PrismaClient } from '@prisma/client';
-import { GetStaticPaths, GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import React from 'react';
 import { ParsedUrlQuery } from 'querystring';
 import { bufferToImgSrc } from '@/utils/bufferToImgSrc';
@@ -55,7 +55,9 @@ interface Props {
   }[];
 }
 
-export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
+  params,
+}) => {
   const { dinosaur } = params as Params;
 
   const prisma = new PrismaClient();
@@ -83,6 +85,7 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
     },
   });
   if (!dinosaurFound) {
+    await prisma.$disconnect();
     return {
       notFound: true,
     };
@@ -157,20 +160,6 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
       dinosaursFromSameEra: formattedDinosaursFromSameEra,
     },
   };
-};
-
-export const getStaticPaths: GetStaticPaths<Params> = async () => {
-  const prisma = new PrismaClient();
-
-  const dinosaurs = await prisma.dinosaur.findMany();
-
-  const paths = dinosaurs.map((dinosaur) => ({
-    params: { dinosaur: dinosaur.name },
-  }));
-
-  await prisma.$disconnect();
-
-  return { paths, fallback: false };
 };
 
 const Dinosaur = ({

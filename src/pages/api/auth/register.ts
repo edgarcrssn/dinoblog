@@ -24,6 +24,7 @@ export default async function handler(
   const existingUser = await prisma.user.findUnique({ where: { username } });
   if (existingUser) {
     res.status(309).send('This username is already taken.');
+    await prisma.$disconnect();
     return;
   }
 
@@ -33,7 +34,6 @@ export default async function handler(
     data: { username, password: hashedPassword },
     select: { username: true, role: true },
   });
-
   await prisma.$disconnect();
 
   const token = jwt.sign(user, '123', {

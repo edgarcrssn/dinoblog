@@ -29,7 +29,7 @@ const DinoCard = ({ dinosaur }: Props) => {
           />
         }
         actions={[
-          <Link key={dinosaur.id} href={`/dinosaurs/${dinosaur.name}`}>
+          <Link key={dinosaur.name} href={`/dinosaurs/${dinosaur.name}`}>
             Read more
           </Link>,
         ]}

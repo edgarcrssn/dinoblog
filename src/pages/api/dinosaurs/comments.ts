@@ -55,7 +55,6 @@ export default async function handler(
         },
       },
     });
-
     await prisma.$disconnect();
 
     res.status(200).send({
@@ -105,6 +104,7 @@ export default async function handler(
           postedAt: true,
         },
       });
+      await prisma.$disconnect();
 
       const formattedComment: CommentI = {
         ...comment,
@@ -115,7 +115,6 @@ export default async function handler(
     } catch (error) {
       res.status(500).send(error);
     }
-    await prisma.$disconnect();
   } else {
     res.status(405).send('This method is not handled.');
   }

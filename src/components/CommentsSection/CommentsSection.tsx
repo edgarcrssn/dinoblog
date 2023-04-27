@@ -73,7 +73,7 @@ const CommentsSection = ({ comments, commentsCount }: Props) => {
       <h2 className={styles.title}>
         {commentsCount} comment{commentsCount > 1 ? 's' : ''}
       </h2>
-      {comments.length ? (
+      {commentsToDisplay.length ? (
         <div className={styles.commentsContainer}>
           {commentsToDisplay
             .sort((a, b) => {
