@@ -12,11 +12,20 @@ import { Inter } from 'next/font/google';
 import Image from 'next/image';
 import { capitalize } from '@/utils/capitalize';
 import DinosaursGrid from '@/components/DinosaursGrid/DinosaursGrid';
+import CommentsSection from '@/components/CommentsSection/CommentsSection';
 
 const inter = Inter({ subsets: ['latin'] });
 
 interface Params extends ParsedUrlQuery {
   dinosaur: string;
+}
+
+export interface CommentI {
+  content: string;
+  author: {
+    username: string;
+  };
+  postedAt: string;
 }
 
 interface Props {
@@ -31,7 +40,9 @@ interface Props {
     diet: Diet;
     description: string;
     image: string;
+    comments: CommentI[];
   };
+  commentsCount: number;
   dinosaursWithSameDiet: {
     name: string;
     image: string;
@@ -48,9 +59,27 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   const { dinosaur } = params as Params;
 
   const prisma = new PrismaClient();
+
   const dinosaurFound = await prisma.dinosaur.findUnique({
     where: {
       name: dinosaur,
+    },
+    include: {
+      comments: {
+        take: 3,
+        orderBy: {
+          postedAt: 'desc',
+        },
+        select: {
+          postedAt: true,
+          content: true,
+          author: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      },
     },
   });
   if (!dinosaurFound) {
@@ -58,10 +87,21 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
       notFound: true,
     };
   }
+  const commentsCount = await prisma.comment.count({
+    where: {
+      dinosaur: {
+        name: dinosaur,
+      },
+    },
+  });
   const formattedDinosaur = {
     ...dinosaurFound,
     createdAt: dinosaurFound.createdAt.toISOString(),
     image: bufferToImgSrc(Buffer.from(dinosaurFound.image)),
+    comments: dinosaurFound.comments.map((comment) => ({
+      ...comment,
+      postedAt: comment.postedAt.toISOString(),
+    })),
   };
 
   const dinosaursWithSameDiet = await prisma.dinosaur.findMany({
@@ -112,6 +152,7 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   return {
     props: {
       dinosaur: formattedDinosaur,
+      commentsCount,
       dinosaursWithSameDiet: formattedDinosaursWithSameDiet,
       dinosaursFromSameEra: formattedDinosaursFromSameEra,
     },
@@ -134,6 +175,7 @@ export const getStaticPaths: GetStaticPaths<Params> = async () => {
 
 const Dinosaur = ({
   dinosaur,
+  commentsCount,
   dinosaursWithSameDiet,
   dinosaursFromSameEra,
 }: Props) => {
@@ -216,6 +258,10 @@ const Dinosaur = ({
             </Card>
           ))}
         </Grid>
+        <CommentsSection
+          comments={dinosaur.comments}
+          commentsCount={commentsCount}
+        />
         <section>
           <h2 className={styles.subtitle}>
             More {dinosaur.diet.toLowerCase()}s dinosaurs

@@ -15,18 +15,6 @@ a {
   text-decoration: none;
 }
 
-.logo {
-  display: block;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: white;
-  padding: 0 1rem;
-}
-.logo:hover {
-  color: white;
-}
-
 h1 {
   font-size: 2rem;
 }

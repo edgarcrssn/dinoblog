@@ -1,9 +1,10 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { Layout, theme } from 'antd';
-import Link from 'next/link';
+import { LoggedUserProvider } from '@/contexts/LoggedUserContext';
+import Navbar from '@/components/Navbar/Navbar';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 
 export default function App({ Component, pageProps }: AppProps) {
   const {
@@ -11,19 +12,13 @@ export default function App({ Component, pageProps }: AppProps) {
   } = theme.useToken();
 
   return (
-    <>
+    <LoggedUserProvider>
       <Layout>
-        <Header
-          style={{ position: 'sticky', top: 0, zIndex: 1, width: '100%' }}
-        >
-          <Link className="logo" href="/">
-            🦕 Dinoblog 🦖
-          </Link>
-        </Header>
+        <Navbar />
         <Content className="site-layout" style={{ padding: '0 50px' }}>
           <div
             style={{
-              padding: 24,
+              padding: '1.5rem',
               minHeight: 380,
               background: colorBgContainer,
             }}
@@ -38,6 +33,6 @@ export default function App({ Component, pageProps }: AppProps) {
           </a>
         </Footer>
       </Layout>
-    </>
+    </LoggedUserProvider>
   );
 }

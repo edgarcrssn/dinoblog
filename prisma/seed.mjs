@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -17,6 +18,14 @@ const getImageBuffer = (fileName) => {
 };
 
 async function main() {
+  const user = await prisma.user.create({
+    data: {
+      username: 'admin',
+      password: await bcrypt.hash('admin', 10),
+      role: 'ADMIN',
+    },
+  });
+
   const dinosaurs = [
     {
       name: 'tyrannosaurus-rex',
@@ -27,6 +36,12 @@ async function main() {
       diet: 'CARNIVORE',
       description: 'One of the largest meat-eating dinosaurs that ever lived.',
       image: getImageBuffer('tyrannosaurus-rex.jpg'),
+      comments: {
+        create: {
+          authorId: user.id,
+          content: "C'est mon dinosaure préféré!",
+        },
+      },
     },
     {
       name: 'velociraptor',
@@ -154,7 +169,7 @@ async function main() {
     });
   }
 
-  console.log('Inserted 12 dinosaurs!');
+  console.log('db init done!');
 }
 
 main()

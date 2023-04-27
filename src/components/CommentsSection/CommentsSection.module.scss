@@ -1,0 +1,29 @@
+.commentsSection {
+  .title {
+    margin-bottom: 1rem;
+  }
+
+  .commentsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .comment {
+      .head {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .author {
+          font-weight: 500;
+        }
+        .date {
+          opacity: .5;
+        }
+      }
+      .content {
+        padding: .25rem 0 0;
+      }
+    }
+  }
+}
