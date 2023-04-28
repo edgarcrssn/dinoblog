@@ -48,12 +48,11 @@ interface Props {
 export const getStaticPaths: GetStaticPaths = async () => {
   const prisma = new PrismaClient();
   const dinosaurs = await prisma.dinosaur.findMany({ select: { name: true } });
+  await prisma.$disconnect();
 
   const paths = dinosaurs.map((dinosaur) => ({
     params: { dinosaur: dinosaur.name },
   }));
-
-  await prisma.$disconnect();
 
   return {
     paths,

@@ -68,8 +68,8 @@ const Home = ({ dinosaurs }: Props) => {
   return (
     <>
       <Head>
-        <title>Dinoblog 🦕</title>
-        <meta name="description" content="A blog about dinosaurs" />
+        <title>All dinosaurs 🦖</title>
+        <meta name="description" content="All the dinosaurs" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
