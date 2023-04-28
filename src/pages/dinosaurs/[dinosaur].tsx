@@ -1,5 +1,5 @@
 import { Diet, Era, PrismaClient } from '@prisma/client';
-import { GetServerSideProps } from 'next';
+import { GetStaticPaths, GetStaticProps } from 'next';
 import React from 'react';
 import { ParsedUrlQuery } from 'querystring';
 import { bufferToImgSrc } from '@/utils/bufferToImgSrc';
@@ -20,14 +20,6 @@ interface Params extends ParsedUrlQuery {
   dinosaur: string;
 }
 
-export interface CommentI {
-  content: string;
-  author: {
-    username: string;
-  };
-  postedAt: string;
-}
-
 interface Props {
   dinosaur: {
     id: number;
@@ -40,9 +32,7 @@ interface Props {
     diet: Diet;
     description: string;
     image: string;
-    comments: CommentI[];
   };
-  commentsCount: number;
   dinosaursWithSameDiet: {
     name: string;
     image: string;
@@ -55,33 +45,29 @@ interface Props {
   }[];
 }
 
-export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
-  params,
-}) => {
+export const getStaticPaths: GetStaticPaths = async () => {
+  const prisma = new PrismaClient();
+  const dinosaurs = await prisma.dinosaur.findMany({
+    select: {
+      name: true,
+    },
+  });
+  const paths = dinosaurs.map((dinosaur) => ({
+    params: { dinosaur: dinosaur.name },
+  }));
+
+  await prisma.$disconnect();
+
+  return { paths, fallback: false };
+};
+
+export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
   const { dinosaur } = params as Params;
 
   const prisma = new PrismaClient();
-
   const dinosaurFound = await prisma.dinosaur.findUnique({
     where: {
       name: dinosaur,
-    },
-    include: {
-      comments: {
-        take: 3,
-        orderBy: {
-          postedAt: 'desc',
-        },
-        select: {
-          postedAt: true,
-          content: true,
-          author: {
-            select: {
-              username: true,
-            },
-          },
-        },
-      },
     },
   });
   if (!dinosaurFound) {
@@ -90,21 +76,10 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
       notFound: true,
     };
   }
-  const commentsCount = await prisma.comment.count({
-    where: {
-      dinosaur: {
-        name: dinosaur,
-      },
-    },
-  });
   const formattedDinosaur = {
     ...dinosaurFound,
     createdAt: dinosaurFound.createdAt.toISOString(),
     image: bufferToImgSrc(Buffer.from(dinosaurFound.image)),
-    comments: dinosaurFound.comments.map((comment) => ({
-      ...comment,
-      postedAt: comment.postedAt.toISOString(),
-    })),
   };
 
   const dinosaursWithSameDiet = await prisma.dinosaur.findMany({
@@ -155,7 +130,6 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
   return {
     props: {
       dinosaur: formattedDinosaur,
-      commentsCount,
       dinosaursWithSameDiet: formattedDinosaursWithSameDiet,
       dinosaursFromSameEra: formattedDinosaursFromSameEra,
     },
@@ -164,7 +138,6 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async ({
 
 const Dinosaur = ({
   dinosaur,
-  commentsCount,
   dinosaursWithSameDiet,
   dinosaursFromSameEra,
 }: Props) => {
@@ -247,10 +220,7 @@ const Dinosaur = ({
             </Card>
           ))}
         </Grid>
-        <CommentsSection
-          comments={dinosaur.comments}
-          commentsCount={commentsCount}
-        />
+        <CommentsSection dinosaur={dinosaur.name} />
         <section>
           <h2 className={styles.subtitle}>
             More {dinosaur.diet.toLowerCase()}s dinosaurs

@@ -18,6 +18,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "prisma/seed.mjs", "next-auth.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "prisma/seed.mjs", "next-auth.js", "src/pages/api/dinosaurs/[dinosaur]"],
   "exclude": ["node_modules"]
 }

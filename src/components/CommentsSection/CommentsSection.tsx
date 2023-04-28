@@ -1,41 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import styles from './CommentsSection.module.scss';
-import { CommentI } from '@/pages/dinosaurs/[dinosaur]';
 import { Button, Card } from 'antd';
 import { dinosaursServices } from '@/services/dinosaursServices';
-import { useRouter } from 'next/router';
 import CommentField from '../CommentField/CommentField';
 
 interface Props {
-  comments: CommentI[];
-  commentsCount: number;
+  dinosaur: string;
 }
 
-const CommentsSection = ({ comments, commentsCount }: Props) => {
-  const router = useRouter();
-  const { dinosaur } = router.query;
+export interface CommentI {
+  content: string;
+  author: {
+    username: string;
+  };
+  postedAt: string;
+}
 
-  const [additionalCommentsCount, setAdditionalCommentsCount] = useState(0);
-  const [commentsToDisplay, setCommentsToDisplay] = useState(comments);
-
-  useEffect(() => {
-    if (!dinosaur || typeof dinosaur !== 'string') return;
-    if (!additionalCommentsCount) return;
-
-    dinosaursServices
-      .getComments({
-        dinosaur,
-        skip: additionalCommentsCount,
-        take: 3,
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.comments) {
-          setCommentsToDisplay([...commentsToDisplay, ...data.comments]);
-        }
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [additionalCommentsCount]);
+const CommentsSection = ({ dinosaur }: Props) => {
+  const [commentsDisplayed, setCommentsDisplayed] = useState<CommentI[]>([]);
+  const [allCommentsCount, setAllCommentsCount] = useState(0);
 
   const getElapsedTimeSinceDateString = (dateString: string): string => {
     const date = new Date(dateString);
@@ -68,40 +51,65 @@ const CommentsSection = ({ comments, commentsCount }: Props) => {
     return `just now`;
   };
 
+  useEffect(() => {
+    loadThreeMoreComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dinosaur]);
+
+  const loadThreeMoreComments = () => {
+    dinosaursServices
+      .getComments({
+        dinosaur,
+        skip: commentsDisplayed.length,
+        take: 3,
+      })
+      .then((response) => {
+        if (response.ok) return response.json();
+      })
+      .then(({ comments = null, count = null }) => {
+        console.log(comments);
+        console.log(count);
+        if (comments && count) {
+          setCommentsDisplayed([...commentsDisplayed, ...comments]);
+          setAllCommentsCount(count);
+        }
+      })
+      .catch((error) => console.error(error));
+  };
+
   return (
     <div className={styles.commentsSection}>
       <h2 className={styles.title}>
-        {commentsCount} comment{commentsCount > 1 ? 's' : ''}
+        {allCommentsCount} comment{allCommentsCount > 1 ? 's' : ''}
       </h2>
-      {commentsToDisplay.length ? (
+      {commentsDisplayed.length > 0 ? (
         <div className={styles.commentsContainer}>
-          {commentsToDisplay
+          {commentsDisplayed
             .sort((a, b) => {
               const dateA = new Date(a.postedAt);
               const dateB = new Date(b.postedAt);
               return dateB.getTime() - dateA.getTime();
             })
-            .map((comment) => (
-              <Card key={comment.postedAt}>
-                <div className={styles.comment}>
-                  <div className={styles.head}>
-                    <span className={styles.author}>
-                      {comment.author.username}
-                    </span>
-                    <span className={styles.date}>
-                      {getElapsedTimeSinceDateString(comment.postedAt)}
-                    </span>
+            .map((comment) => {
+              return (
+                <Card key={comment.postedAt}>
+                  <div className={styles.comment}>
+                    <div className={styles.head}>
+                      <span className={styles.author}>
+                        {comment.author.username}
+                      </span>
+                      <span className={styles.date}>
+                        {getElapsedTimeSinceDateString(comment.postedAt)}
+                      </span>
+                    </div>
+                    <p className={styles.content}>{comment.content}</p>
                   </div>
-                  <p className={styles.content}>{comment.content}</p>
-                </div>
-              </Card>
-            ))}
-          {commentsCount > additionalCommentsCount + 3 ? (
+                </Card>
+              );
+            })}
+          {allCommentsCount > commentsDisplayed.length ? (
             <div style={{ margin: 'auto' }}>
-              <Button
-                type="link"
-                onClick={() => setAdditionalCommentsCount((prev) => prev + 3)}
-              >
+              <Button type="link" onClick={loadThreeMoreComments}>
                 Show more
               </Button>
             </div>
@@ -111,8 +119,8 @@ const CommentsSection = ({ comments, commentsCount }: Props) => {
         <span>Be the first to comment!</span>
       )}
       <CommentField
-        commentsToDisplay={commentsToDisplay}
-        setCommentsToDisplay={setCommentsToDisplay}
+        commentsToDisplay={commentsDisplayed}
+        setCommentsToDisplay={setCommentsDisplayed}
       />
     </div>
   );

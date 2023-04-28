@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { CommentI } from '@/pages/dinosaurs/[dinosaur]';
+import { CommentI } from '@/components/CommentsSection/CommentsSection';
 
 export type GetCommentsDto = {
   dinosaur: string;
@@ -28,38 +28,52 @@ export default async function handler(
       !take ||
       typeof take !== 'string'
     ) {
-      res.status(400).send('Bad Request');
-      return;
+      return res.status(400).send('Bad Request');
     }
 
-    const prisma = new PrismaClient();
+    try {
+      const prisma = new PrismaClient();
 
-    const comments = await prisma.comment.findMany({
-      where: {
-        dinosaur: {
-          name: dinosaur,
-        },
-      },
-      orderBy: {
-        postedAt: 'desc',
-      },
-      skip: +skip,
-      take: +take,
-      select: {
-        postedAt: true,
-        content: true,
-        author: {
-          select: {
-            username: true,
+      const commentsFound = await prisma.comment.findMany({
+        where: {
+          dinosaur: {
+            name: dinosaur,
           },
         },
-      },
-    });
-    await prisma.$disconnect();
+        orderBy: {
+          postedAt: 'desc',
+        },
+        skip: +skip,
+        take: +take,
+        select: {
+          postedAt: true,
+          content: true,
+          author: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      });
 
-    res.status(200).send({
-      comments,
-    });
+      const formattedComments: CommentI[] = commentsFound.map((comment) => ({
+        ...comment,
+        postedAt: comment.postedAt.toISOString(),
+      }));
+
+      const allCommentsCount = await prisma.comment.count({
+        where: {
+          dinosaur: {
+            name: dinosaur,
+          },
+        },
+      });
+      await prisma.$disconnect();
+
+      res.send({ comments: formattedComments, count: allCommentsCount });
+    } catch (error) {
+      res.status(500).send(error);
+    }
   } else if (req.method === 'POST') {
     const { content } = req.body;
     const { dinosaur } = req.query;
@@ -104,16 +118,17 @@ export default async function handler(
           postedAt: true,
         },
       });
-      await prisma.$disconnect();
 
       const formattedComment: CommentI = {
         ...comment,
         postedAt: comment.postedAt.toISOString(),
       };
 
-      res.status(201).send(formattedComment);
+      res.status(201).send({ comment: formattedComment });
     } catch (error) {
       res.status(500).send(error);
+    } finally {
+      await prisma.$disconnect();
     }
   } else {
     res.status(405).send('This method is not handled.');
