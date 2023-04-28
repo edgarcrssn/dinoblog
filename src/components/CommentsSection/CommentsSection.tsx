@@ -64,8 +64,6 @@ const CommentsSection = () => {
         if (response.ok) return response.json();
       })
       .then(({ comments = null, count = null }) => {
-        console.log('comments', comments);
-
         if (comments && count) {
           if (init) setCommentsDisplayed(comments);
           else setCommentsDisplayed([...commentsDisplayed, ...comments]);
