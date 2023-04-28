@@ -1,5 +1,5 @@
 import { Diet, Era, PrismaClient } from '@prisma/client';
-import { GetStaticPaths, GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import React from 'react';
 import { ParsedUrlQuery } from 'querystring';
 import { bufferToImgSrc } from '@/utils/bufferToImgSrc';
@@ -45,23 +45,9 @@ interface Props {
   }[];
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const prisma = new PrismaClient();
-  const dinosaurs = await prisma.dinosaur.findMany({
-    select: {
-      name: true,
-    },
-  });
-  const paths = dinosaurs.map((dinosaur) => ({
-    params: { dinosaur: dinosaur.name },
-  }));
-
-  await prisma.$disconnect();
-
-  return { paths, fallback: false };
-};
-
-export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({
+  params,
+}) => {
   const { dinosaur } = params as Params;
 
   const prisma = new PrismaClient();
@@ -220,7 +206,7 @@ const Dinosaur = ({
             </Card>
           ))}
         </Grid>
-        <CommentsSection dinosaur={dinosaur.name} />
+        <CommentsSection />
         <section>
           <h2 className={styles.subtitle}>
             More {dinosaur.diet.toLowerCase()}s dinosaurs

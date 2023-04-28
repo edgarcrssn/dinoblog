@@ -31,9 +31,8 @@ export default async function handler(
       return res.status(400).send('Bad Request');
     }
 
+    const prisma = new PrismaClient();
     try {
-      const prisma = new PrismaClient();
-
       const commentsFound = await prisma.comment.findMany({
         where: {
           dinosaur: {
@@ -46,6 +45,7 @@ export default async function handler(
         skip: +skip,
         take: +take,
         select: {
+          id: true,
           postedAt: true,
           content: true,
           author: {
@@ -55,7 +55,6 @@ export default async function handler(
           },
         },
       });
-
       const formattedComments: CommentI[] = commentsFound.map((comment) => ({
         ...comment,
         postedAt: comment.postedAt.toISOString(),
@@ -73,6 +72,8 @@ export default async function handler(
       res.send({ comments: formattedComments, count: allCommentsCount });
     } catch (error) {
       res.status(500).send(error);
+    } finally {
+      await prisma.$disconnect();
     }
   } else if (req.method === 'POST') {
     const { content } = req.body;
@@ -109,6 +110,7 @@ export default async function handler(
           },
         },
         select: {
+          id: true,
           author: {
             select: {
               username: true,
@@ -118,11 +120,11 @@ export default async function handler(
           postedAt: true,
         },
       });
-
       const formattedComment: CommentI = {
         ...comment,
         postedAt: comment.postedAt.toISOString(),
       };
+      await prisma.$disconnect();
 
       res.status(201).send({ comment: formattedComment });
     } catch (error) {

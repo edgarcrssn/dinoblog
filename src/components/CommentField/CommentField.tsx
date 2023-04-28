@@ -4,20 +4,23 @@ import { useLoggedUser } from '@/contexts/LoggedUserContext';
 import { Input } from 'antd';
 import { Button } from 'antd';
 import { dinosaursServices } from '@/services/dinosaursServices';
-import { useRouter } from 'next/router';
-import { CommentI } from '@/pages/dinosaurs/[dinosaur]';
+import { CommentI } from '../CommentsSection/CommentsSection';
 
 const { TextArea } = Input;
 
 interface Props {
-  commentsToDisplay: CommentI[];
-  setCommentsToDisplay: React.Dispatch<React.SetStateAction<CommentI[]>>;
+  dinosaur: string;
+  commentsDisplayed: CommentI[];
+  setCommentsDisplayed: React.Dispatch<React.SetStateAction<CommentI[]>>;
+  setAllCommentsCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const CommentField = ({ commentsToDisplay, setCommentsToDisplay }: Props) => {
-  const router = useRouter();
-  const { dinosaur } = router.query;
-
+const CommentField = ({
+  dinosaur,
+  commentsDisplayed,
+  setCommentsDisplayed,
+  setAllCommentsCount,
+}: Props) => {
   const { loggedUser } = useLoggedUser();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +28,7 @@ const CommentField = ({ commentsToDisplay, setCommentsToDisplay }: Props) => {
 
   const postComment = () => {
     if (!comment) return;
-    if (!dinosaur || typeof dinosaur !== 'string') return;
+    if (!dinosaur) return;
 
     setIsLoading(true);
     dinosaursServices
@@ -33,9 +36,10 @@ const CommentField = ({ commentsToDisplay, setCommentsToDisplay }: Props) => {
       .then((response) => {
         if (response.ok) return response.json();
       })
-      .then((comment: CommentI) => {
+      .then(({ comment }: { comment: CommentI }) => {
         if (comment) {
-          setCommentsToDisplay([...commentsToDisplay, comment]);
+          setCommentsDisplayed([...commentsDisplayed, comment]);
+          setAllCommentsCount((prev) => prev + 1);
           setComment('');
         }
       })
