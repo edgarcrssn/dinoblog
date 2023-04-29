@@ -23,7 +23,12 @@ export default async function handler(
   }
 
   try {
-    const decoded = jwt.verify(token, '123');
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('JWT_SECRET not found');
+      return;
+    }
+    const decoded = jwt.verify(token, secret);
     return res.status(200).json(decoded);
   } catch (err) {
     return res.status(401).json({ error: 'Token invalide' });

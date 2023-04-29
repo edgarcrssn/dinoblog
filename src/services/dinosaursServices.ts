@@ -7,7 +7,7 @@ import { manageToken } from '@/utils/manageToken';
 export const dinosaursServices = {
   getComments({ dinosaur, skip, take }: GetCommentsDto) {
     return fetch(
-      `http://localhost:3000/api/dinosaurs/${dinosaur}/comments?skip=${skip}&take=${take}`,
+      `/api/dinosaurs/${dinosaur}/comments?skip=${skip}&take=${take}`,
       {
         method: 'GET',
       }
@@ -15,7 +15,7 @@ export const dinosaursServices = {
   },
 
   postComment({ dinosaur, content }: PostCommentDto) {
-    return fetch(`http://localhost:3000/api/dinosaurs/${dinosaur}/comments`, {
+    return fetch(`/api/dinosaurs/${dinosaur}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { Button, Card } from 'antd';
 import { dinosaursServices } from '@/services/dinosaursServices';
 import CommentField from '../CommentField/CommentField';
 import { useRouter } from 'next/router';
+import { LoadingOutlined } from '@ant-design/icons';
 export interface CommentI {
   id: number;
   content: string;
@@ -17,6 +18,7 @@ const CommentsSection = () => {
   const router = useRouter();
   const { dinosaur } = router.query;
 
+  const [isLoading, setIsLoading] = useState(true);
   const [commentsDisplayed, setCommentsDisplayed] = useState<CommentI[]>([]);
   const [allCommentsCount, setAllCommentsCount] = useState(0);
 
@@ -54,6 +56,7 @@ const CommentsSection = () => {
   const loadThreeMoreComments = (init?: boolean) => {
     if (!dinosaur || typeof dinosaur !== 'string') return;
 
+    setIsLoading(true);
     dinosaursServices
       .getComments({
         dinosaur,
@@ -64,13 +67,12 @@ const CommentsSection = () => {
         if (response.ok) return response.json();
       })
       .then(({ comments = null, count = null }) => {
-        if (comments && count) {
-          if (init) setCommentsDisplayed(comments);
-          else setCommentsDisplayed([...commentsDisplayed, ...comments]);
-          setAllCommentsCount(count);
-        }
+        if (init) setCommentsDisplayed(comments || []);
+        else setCommentsDisplayed([...commentsDisplayed, ...(comments || [])]);
+        setAllCommentsCount(count || 0);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error(error))
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -106,7 +108,7 @@ const CommentsSection = () => {
                 </div>
               </Card>
             ))}
-          {allCommentsCount > commentsDisplayed.length ? (
+          {allCommentsCount > commentsDisplayed.length && !isLoading ? (
             <div style={{ margin: 'auto' }}>
               <Button type="link" onClick={() => loadThreeMoreComments(false)}>
                 Show more
@@ -117,6 +119,9 @@ const CommentsSection = () => {
       ) : (
         <span>Be the first to comment!</span>
       )}
+      {isLoading ? (
+        <LoadingOutlined style={{ display: 'block', margin: '1rem auto' }} />
+      ) : null}
       <CommentField
         dinosaur={dinosaur as string}
         commentsDisplayed={commentsDisplayed}

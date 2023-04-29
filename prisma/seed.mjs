@@ -18,10 +18,19 @@ const getImageBuffer = (fileName) => {
 };
 
 async function main() {
-  const user = await prisma.user.create({
-    data: {
+  const adminPass = process.env.ADMIN_PASSWORD;
+  if (!adminPass) {
+    console.error('ADMIN_PASSWORD not found');
+    return;
+  }
+  const user = await prisma.user.upsert({
+    where: {
       username: 'admin',
-      password: await bcrypt.hash('admin', 10),
+    },
+    update: {},
+    create: {
+      username: 'admin',
+      password: await bcrypt.hash(adminPass, 10),
       role: 'ADMIN',
     },
   });

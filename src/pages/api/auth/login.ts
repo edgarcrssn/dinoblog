@@ -13,8 +13,7 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   if (req.method !== 'POST') {
-    res.status(405).send('This method is not handled.');
-    return;
+    return res.status(405).send('This method is not handled.');
   }
 
   const { username, password } = req.body as LoginDto;
@@ -40,16 +39,20 @@ export default async function handler(
     return res.status(401).send('Wrong credentials');
   }
 
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('JWT_SECRET not found');
+    return;
+  }
+
   const token = jwt.sign(
     { username: userFound.username, role: userFound.role },
-    '123',
+    secret,
     { expiresIn: '1h' }
   );
 
-  res
-    .status(200)
-    .send({
-      token,
-      user: { username: userFound.username, role: userFound.role },
-    });
+  res.status(200).send({
+    token,
+    user: { username: userFound.username, role: userFound.role },
+  });
 }

@@ -13,8 +13,7 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   if (req.method !== 'POST') {
-    res.status(405).send('This method is not handled.');
-    return;
+    return res.status(405).send('this method is not handled.');
   }
 
   const { username, password } = req.body as RegisterDto;
@@ -23,9 +22,8 @@ export default async function handler(
 
   const existingUser = await prisma.user.findUnique({ where: { username } });
   if (existingUser) {
-    res.status(309).send('This username is already taken.');
     await prisma.$disconnect();
-    return;
+    return res.status(309).send('this username is already taken.');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,7 +34,12 @@ export default async function handler(
   });
   await prisma.$disconnect();
 
-  const token = jwt.sign(user, '123', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('JWT_SECRET not found');
+    return;
+  }
+  const token = jwt.sign(user, secret, {
     expiresIn: '1d',
   });
 

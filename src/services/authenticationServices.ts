@@ -3,7 +3,7 @@ import { RegisterDto } from '@/pages/api/auth/register';
 
 export const authenticationServices = {
   register(registerDto: RegisterDto) {
-    return fetch('http://localhost:3000/api/auth/register', {
+    return fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ export const authenticationServices = {
   },
 
   login(loginDto: LoginDto) {
-    return fetch('http://localhost:3000/api/auth/login', {
+    return fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export const authenticationServices = {
   },
 
   verifyToken(token: string) {
-    return fetch('http://localhost:3000/api/auth/verify-token', {
+    return fetch('/api/auth/verify-token', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

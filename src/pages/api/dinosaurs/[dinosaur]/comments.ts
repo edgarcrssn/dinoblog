@@ -90,7 +90,13 @@ export default async function handler(
 
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).send('No token found');
-    const { username } = jwt.verify(token, '123') as JwtPayload;
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('JWT_SECRET not found');
+      return;
+    }
+    const { username } = jwt.verify(token, secret) as JwtPayload;
 
     const prisma = new PrismaClient();
 
